@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "6f30605907a767cb",
+        "id": "b044bbd653f7266a",
         "type": "tabs",
         "children": [
           {
-            "id": "a3284c423306ac02",
+            "id": "9d2a509ae1312787",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -157,13 +157,23 @@
               "icon": "lucide-list",
               "title": "大纲"
             }
+          },
+          {
+            "id": "e3ba7f546714d691",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -178,12 +188,12 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "a3284c423306ac02",
+  "active": "9d2a509ae1312787",
   "lastOpenFiles": [
+    "必掌握linux命令.md",
     "docker学习.md",
     "Pasted image 20260318154037.png",
     "Pasted image 20260318153652.png",
-    "必掌握linux命令.md",
     "podman学习.md",
     "docker学习_整理版.md",
     "grep用法.md",
