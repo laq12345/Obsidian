@@ -2,8 +2,8 @@ sudo docker pull image拉取镜像
 sudo docker rmi image 删除镜像
 sudo docker run image创建并运行容器
 sudo docker run -d(分离容器) image创建容器并在后台运行
-sudo docker run -p(端口映射) 80:80 image![[Pasted image 20260318153652.png]]
-sudo docker run -v(挂载卷) 宿主机目录:容器内目录![[Pasted image 20260318154037.png]]
+sudo docker run -p(端口映射) 80:80 image
+sudo docker run -v(挂载卷) 宿主机目录:容器内目录
 sudo docker ps查看正在运行的容器
 
 sudo docker stop <容器ID或名字> 停止容器

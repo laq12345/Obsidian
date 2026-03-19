@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "9747e21b4b2ab739",
+        "id": "6f30605907a767cb",
         "type": "tabs",
         "children": [
           {
-            "id": "bd2d9f6227bf677f",
+            "id": "a3284c423306ac02",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -174,18 +174,19 @@
       "templates:插入模板": false,
       "command-palette:打开命令面板": false,
       "bases:新建数据库": false,
-      "workspaces:管理工作区布局": false
+      "workspaces:管理工作区布局": false,
+      "obsidian-git:Open Git source control": false
     }
   },
-  "active": "49f4573db97f7f83",
+  "active": "a3284c423306ac02",
   "lastOpenFiles": [
+    "docker学习.md",
+    "Pasted image 20260318154037.png",
+    "Pasted image 20260318153652.png",
     "必掌握linux命令.md",
     "podman学习.md",
     "docker学习_整理版.md",
     "grep用法.md",
-    "docker学习.md",
-    "Pasted image 20260318154037.png",
-    "Pasted image 20260318153652.png",
     "欢迎.md",
     "sed用法.md",
     "Linux",
