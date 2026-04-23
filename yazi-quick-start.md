@@ -186,14 +186,14 @@ Further navigation commands can be found in the table below.
 
 To select files and directories, the following commands are available.
 
-| Key binding                    | Action (中文) |
-| ------------------------------ | ------------- |
+| Key binding                    | Action (中文)    |
+| ------------------------------ | -------------- |
 | <kbd>Space</kbd>               | 切换悬停文件/目录的选中状态 |
-| <kbd>v</kbd>                   | 进入可视模式（选择模式） |
-| <kbd>V</kbd>                   | 进入可视模式（取消模式） |
-| <kbd>Ctrl</kbd> + <kbd>a</kbd> | 全选文件 |
-| <kbd>Ctrl</kbd> + <kbd>r</kbd> | 反选所有文件 |
-| <kbd>Esc</kbd>                 | 取消选择 |
+| <kbd>v</kbd>                   | 进入可视模式（选择模式）   |
+| <kbd>V</kbd>                   | 进入可视模式（取消模式）   |
+| <kbd>Ctrl</kbd> + <kbd>a</kbd> | 全选文件           |
+| <kbd>Ctrl</kbd> + <kbd>r</kbd> | 反选所有文件         |
+| <kbd>Esc</kbd>                 | 取消选择           |
 
 ### File operations
 
