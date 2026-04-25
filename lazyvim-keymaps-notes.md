@@ -255,131 +255,132 @@ tags:
 
 - 条目数: 4
 
-| Key | Description（中文） | Mode | Description（原文） |
-|---|---|---|---|
-| `<leader>qd` | 不保存当前会话 | `n` | Don't Save Current Session |
-| `<leader>ql` | 恢复上次会话 | `n` | Restore Last Session |
-| `<leader>qs` | 恢复会话 | `n` | Restore Session |
-| `<leader>qS` | 选择会话 | `n` | Select Session |
+| Key          | Description（中文） | Mode | Description（原文）            |
+| ------------ | --------------- | ---- | -------------------------- |
+| `<leader>qd` | 不保存当前会话         | `n`  | Don't Save Current Session |
+| `<leader>ql` | 恢复上次会话          | `n`  | Restore Last Session       |
+| `<leader>qs` | 恢复会话            | `n`  | Restore Session            |
+| `<leader>qS` | 选择会话            | `n`  | Select Session             |
 
 ### 4.10 snacks.nvim (1)
 
 - 条目数: 56
 
-| Key | Description（中文） | Mode | Description（原文） |
-|---|---|---|---|
-| `<leader><space>` | 查找文件（根目录） | `n` | Find Files (Root Dir) |
-| `<leader>,` | 缓冲区列表 | `n` | Buffers |
-| `<leader>.` | 切换临时缓冲区 | `n` | Toggle Scratch Buffer |
-| `<leader>/` | 全文搜索（根目录） | `n` | Grep (Root Dir) |
-| `<leader>:` | 命令历史 | `n` | Command History |
-| `<leader>dps` | 性能分析临时缓冲区 | `n` | Profiler Scratch Buffer |
-| `<leader>e` | Snacks 文件浏览器（根目录） | `n` | Explorer Snacks (root dir) |
-| `<leader>E` | Snacks 文件浏览器（当前目录） | `n` | Explorer Snacks (cwd) |
-| `<leader>fb` | 缓冲区列表 | `n` | Buffers |
-| `<leader>fB` | 所有缓冲区列表 | `n` | Buffers (all) |
-| `<leader>fc` | 查找配置文件 | `n` | Find Config File |
-| `<leader>fe` | Snacks 文件浏览器（根目录） | `n` | Explorer Snacks (root dir) |
-| `<leader>fE` | Snacks 文件浏览器（当前目录） | `n` | Explorer Snacks (cwd) |
-| `<leader>ff` | 查找文件（根目录） | `n` | Find Files (Root Dir) |
-| `<leader>fF` | 查找文件（当前目录） | `n` | Find Files (cwd) |
-| `<leader>fg` | 查找文件（Git 文件） | `n` | Find Files (git-files) |
-| `<leader>fp` | 项目列表 | `n` | Projects |
-| `<leader>fr` | 最近文件 | `n` | Recent |
-| `<leader>fR` | 最近文件（当前目录） | `n` | Recent (cwd) |
-| `<leader>gd` | Git 差异（代码块） | `n` | Git Diff (hunks) |
-| `<leader>gD` | Git 差异（远端 origin） | `n` | Git Diff (origin) |
-| `<leader>gi` | GitHub Issues（打开） | `n` | GitHub Issues (open) |
-| `<leader>gI` | GitHub Issues（全部） | `n` | GitHub Issues (all) |
-| `<leader>gp` | GitHub Pull Requests（打开） | `n` | GitHub Pull Requests (open) |
-| `<leader>gP` | GitHub Pull Requests（全部） | `n` | GitHub Pull Requests (all) |
-| `<leader>gs` | Git 状态 | `n` | Git Status |
-| `<leader>gS` | Git 暂存区 | `n` | Git Stash |
-| `<leader>n` | 通知历史 | `n` | Notification History |
-| `<leader>S` | 选择临时缓冲区 | `n` | Select Scratch Buffer |
-| `<leader>s"` | 寄存器列表 | `n` | Registers |
-| `<leader>s/` | 搜索历史 | `n` | Search History |
-| `<leader>sa` | 自动命令 | `n` | Autocmds |
-| `<leader>sb` | 缓冲区行 | `n` | Buffer Lines |
-| `<leader>sB` | 在已打开缓冲区中搜索 | `n` | Grep Open Buffers |
-| `<leader>sc` | 命令历史 | `n` | Command History |
-| `<leader>sC` | 命令列表 | `n` | Commands |
-| `<leader>sd` | 诊断列表 | `n` | Diagnostics |
-| `<leader>sD` | 当前缓冲区诊断 | `n` | Buffer Diagnostics |
-| `<leader>sg` | 全文搜索（根目录） | `n` | Grep (Root Dir) |
-| `<leader>sG` | 全文搜索（当前目录） | `n` | Grep (cwd) |
-| `<leader>sh` | 帮助页面 | `n` | Help Pages |
-| `<leader>sH` | 高亮组 | `n` | Highlights |
-| `<leader>si` | 图标列表 | `n` | Icons |
-| `<leader>sj` | 跳转列表 | `n` | Jumps |
-| `<leader>sk` | 按键映射列表 | `n` | Keymaps |
-| `<leader>sl` | 位置列表 | `n` | Location List |
-| `<leader>sm` | 标记列表 | `n` | Marks |
-| `<leader>sM` | Man 页面 | `n` | Man Pages |
-| `<leader>sp` | 搜索插件规范 | `n` | Search for Plugin Spec |
-| `<leader>sq` | Quickfix 列表 | `n` | Quickfix List |
-| `<leader>sR` | 恢复上次搜索 | `n` | Resume |
-| `<leader>su` | 撤销树 | `n` | Undotree |
-| `<leader>sw` | 选区或光标词搜索（根目录） | `n,x` | Visual selection or word (Root Dir) |
-| `<leader>sW` | 选区或光标词搜索（当前目录） | `n,x` | Visual selection or word (cwd) |
-| `<leader>uC` | 配色方案 | `n` | Colorschemes |
-| `<leader>un` | 清除全部通知 | `n` | Dismiss All Notifications |
+| Key               | Description（中文）          | Mode  | Description（原文）                     |
+| ----------------- | ------------------------ | ----- | ----------------------------------- |
+| `<leader><space>` | 查找文件（根目录）                | `n`   | Find Files (Root Dir)               |
+| `<leader>,`       | 缓冲区列表                    | `n`   | Buffers                             |
+| `<leader>.`       | 切换临时缓冲区                  | `n`   | Toggle Scratch Buffer               |
+| `<leader>/`       | 全文搜索（根目录）                | `n`   | Grep (Root Dir)                     |
+| `<leader>:`       | 命令历史                     | `n`   | Command History                     |
+| `<leader>dps`     | 性能分析临时缓冲区                | `n`   | Profiler Scratch Buffer             |
+| `<leader>e`       | Snacks 文件浏览器（根目录）        | `n`   | Explorer Snacks (root dir)          |
+| `<leader>E`       | Snacks 文件浏览器（当前目录）       | `n`   | Explorer Snacks (cwd)               |
+| `<leader>fb`      | 缓冲区列表                    | `n`   | Buffers                             |
+| `<leader>fB`      | 所有缓冲区列表                  | `n`   | Buffers (all)                       |
+| `<leader>fc`      | 查找配置文件                   | `n`   | Find Config File                    |
+| `<leader>fe`      | Snacks 文件浏览器（根目录）        | `n`   | Explorer Snacks (root dir)          |
+| `<leader>fE`      | Snacks 文件浏览器（当前目录）       | `n`   | Explorer Snacks (cwd)               |
+| `<leader>ff`      | 查找文件（根目录）                | `n`   | Find Files (Root Dir)               |
+| `<leader>fF`      | 查找文件（当前目录）               | `n`   | Find Files (cwd)                    |
+| `<leader>fg`      | 查找文件（Git 文件）             | `n`   | Find Files (git-files)              |
+| `<leader>fp`      | 项目列表                     | `n`   | Projects                            |
+| `<leader>fr`      | 最近文件                     | `n`   | Recent                              |
+| `<leader>fR`      | 最近文件（当前目录）               | `n`   | Recent (cwd)                        |
+| `<leader>gd`      | Git 差异（代码块）              | `n`   | Git Diff (hunks)                    |
+| `<leader>gD`      | Git 差异（远端 origin）        | `n`   | Git Diff (origin)                   |
+| `<leader>gi`      | GitHub Issues（打开）        | `n`   | GitHub Issues (open)                |
+| `<leader>gI`      | GitHub Issues（全部）        | `n`   | GitHub Issues (all)                 |
+| `<leader>gp`      | GitHub Pull Requests（打开） | `n`   | GitHub Pull Requests (open)         |
+| `<leader>gP`      | GitHub Pull Requests（全部） | `n`   | GitHub Pull Requests (all)          |
+| `<leader>gs`      | Git 状态                   | `n`   | Git Status                          |
+| `<leader>gS`      | Git 暂存区                  | `n`   | Git Stash                           |
+| `<leader>n`       | 通知历史                     | `n`   | Notification History                |
+| `<leader>S`       | 选择临时缓冲区                  | `n`   | Select Scratch Buffer               |
+| `<leader>s"`      | 寄存器列表                    | `n`   | Registers                           |
+| `<leader>s/`      | 搜索历史                     | `n`   | Search History                      |
+| `<leader>sa`      | 自动命令                     | `n`   | Autocmds                            |
+| `<leader>sb`      | 缓冲区行                     | `n`   | Buffer Lines                        |
+| `<leader>sB`      | 在已打开缓冲区中搜索               | `n`   | Grep Open Buffers                   |
+| `<leader>sc`      | 命令历史                     | `n`   | Command History                     |
+| `<leader>sC`      | 命令列表                     | `n`   | Commands                            |
+| `<leader>sd`      | 诊断列表                     | `n`   | Diagnostics                         |
+| `<leader>sD`      | 当前缓冲区诊断                  | `n`   | Buffer Diagnostics                  |
+| `<leader>sg`      | 全文搜索（根目录）                | `n`   | Grep (Root Dir)                     |
+| `<leader>sG`      | 全文搜索（当前目录）               | `n`   | Grep (cwd)                          |
+| `<leader>sh`      | 帮助页面                     | `n`   | Help Pages                          |
+| `<leader>sH`      | 高亮组                      | `n`   | Highlights                          |
+| `<leader>si`      | 图标列表                     | `n`   | Icons                               |
+| `<leader>sj`      | 跳转列表                     | `n`   | Jumps                               |
+| `<leader>sk`      | 按键映射列表                   | `n`   | Keymaps                             |
+| `<leader>sl`      | 位置列表                     | `n`   | Location List                       |
+| `<leader>sm`      | 标记列表                     | `n`   | Marks                               |
+| `<leader>sM`      | Man 页面                   | `n`   | Man Pages                           |
+| `<leader>sp`      | 搜索插件规范                   | `n`   | Search for Plugin Spec              |
+| `<leader>sq`      | Quickfix 列表              | `n`   | Quickfix List                       |
+| `<leader>sR`      | 恢复上次搜索                   | `n`   | Resume                              |
+| `<leader>su`      | 撤销树                      | `n`   | Undotree                            |
+| `<leader>sw`      | 选区或光标词搜索（根目录）            | `n,x` | Visual selection or word (Root Dir) |
+| `<leader>sW`      | 选区或光标词搜索（当前目录）           | `n,x` | Visual selection or word (cwd)      |
+| `<leader>uC`      | 配色方案                     | `n`   | Colorschemes                        |
+| `<leader>un`      | 清除全部通知                   | `n`   | Dismiss All Notifications           |
 
 ### 4.11 todo-comments.nvim (1)
 
 - 条目数: 6
 
-| Key | Description（中文） | Mode | Description（原文） |
-|---|---|---|---|
-| `<leader>st` | 待办 | `n` | Todo |
-| `<leader>sT` | 待办/Fix/Fixme | `n` | Todo/Fix/Fixme |
-| `<leader>xt` | 待办（Trouble） | `n` | Todo (Trouble) |
-| `<leader>xT` | 待办/Fix/Fixme（Trouble） | `n` | Todo/Fix/Fixme (Trouble) |
-| `[t` | 上一个 Todo 注释 | `n` | Previous Todo Comment |
-| `]t` | 下一个 Todo 注释 | `n` | Next Todo Comment |
+| Key          | Description（中文）       | Mode | Description（原文）          |
+| ------------ | --------------------- | ---- | ------------------------ |
+| `<leader>st` | 待办                    | `n`  | Todo                     |
+| `<leader>sT` | 待办/Fix/Fixme          | `n`  | Todo/Fix/Fixme           |
+| `<leader>xt` | 待办（Trouble）           | `n`  | Todo (Trouble)           |
+| `<leader>xT` | 待办/Fix/Fixme（Trouble） | `n`  | Todo/Fix/Fixme (Trouble) |
+| `[t`         | 上一个 Todo 注释           | `n`  | Previous Todo Comment    |
+| `]t`         | 下一个 Todo 注释           | `n`  | Next Todo Comment        |
 
 ### 4.12 trouble.nvim
 
 - 条目数: 8
 
-| Key | Description（中文） | Mode | Description（原文） |
-|---|---|---|---|
-| `<leader>cs` | 符号（Trouble） | `n` | Symbols (Trouble) |
-| `<leader>cS` | LSP 引用/定义/...（Trouble） | `n` | LSP references/definitions/... (Trouble) |
-| `<leader>xL` | 位置列表（Trouble） | `n` | Location List (Trouble) |
-| `<leader>xQ` | Quickfix 列表（Trouble） | `n` | Quickfix List (Trouble) |
-| `<leader>xx` | 诊断（Trouble） | `n` | Diagnostics (Trouble) |
-| `<leader>xX` | 缓冲区诊断（Trouble） | `n` | Buffer Diagnostics (Trouble) |
-| `[q` | 上一个 Trouble/Quickfix 项 | `n` | Previous Trouble/Quickfix Item |
-| `]q` | 下一个 Trouble/Quickfix 项 | `n` | Next Trouble/Quickfix Item |
+| Key          | Description（中文）        | Mode | Description（原文）                          |     |
+| ------------ | ---------------------- | ---- | ---------------------------------------- | --- |
+| `<leader>cs` | 符号（Trouble）            | `n`  | Symbols (Trouble)                        |     |
+| `<leader>cS` | LSP 引用/定义/...（Trouble） | `n`  | LSP references/definitions/... (Trouble) |     |
+| `<leader>xL` | 位置列表（Trouble）          | `n`  | Location List (Trouble)                  |     |
+| `<leader>xQ` | Quickfix 列表（Trouble）   | `n`  | Quickfix List (Trouble)                  |     |
+| `<leader>xx` | 诊断（Trouble）            | `n`  | Diagnostics (Trouble)                    |     |
+| `<leader>xX` | 缓冲区诊断（Trouble）         | `n`  | Buffer Diagnostics (Trouble)             |     |
+| `[q`         | 上一个 Trouble/Quickfix 项 | `n`  | Previous Trouble/Quickfix Item           |     |
+| `]q`         | 下一个 Trouble/Quickfix 项 | `n`  | Next Trouble/Quickfix Item               |     |
 
 ### 4.13 which-key.nvim
 
 - 条目数: 2
 
-| Key | Description（中文） | Mode | Description（原文） |
-|---|---|---|---|
-| `<c-w><space>` | 窗口 Hydra 模式（which-key） | `n` | Window Hydra Mode (which-key) |
-| `<leader>?` | 当前缓冲区键位（which-key） | `n` | Buffer Keymaps (which-key) |
+| Key            | Description（中文）        | Mode | Description（原文）               |
+| -------------- | ---------------------- | ---- | ----------------------------- |
+| `<c-w><space>` | 窗口 Hydra 模式（which-key） | `n`  | Window Hydra Mode (which-key) |
+| `<leader>?`    | 当前缓冲区键位（which-key）     | `n`  | Buffer Keymaps (which-key)    |
+|                |                        |      |                               |
 
 ### 4.14 avante.nvim
 
 - 条目数: 11
 - Part of: `[lazyvim.plugins.extras.ai.avante](/extras/ai/avante)`
 
-| Key | Description（中文） | Mode | Description（原文） |
-|---|---|---|---|
-| `<leader>aa` | 向 Avante 提问 | `n` | Ask Avante |
-| `<leader>ac` | 与 Avante 对话 | `n` | Chat with Avante |
-| `<leader>ae` | 编辑 Avante | `n` | Edit Avante |
-| `<leader>af` | 聚焦 Avante | `n` | Focus Avante |
-| `<leader>ah` | Avante 历史 | `n` | Avante History |
-| `<leader>am` | 选择 Avante 模型 | `n` | Select Avante Model |
-| `<leader>an` | 新建 Avante 对话 | `n` | New Avante Chat |
-| `<leader>ap` | 切换 Avante 提供商 | `n` | Switch Avante Provider |
-| `<leader>ar` | 刷新 Avante | `n` | Refresh Avante |
-| `<leader>as` | 停止 Avante | `n` | Stop Avante |
-| `<leader>at` | 切换 Avante | `n` | Toggle Avante |
+| Key          | Description（中文） | Mode | Description（原文）        |
+| ------------ | --------------- | ---- | ---------------------- |
+| `<leader>aa` | 向 Avante 提问     | `n`  | Ask Avante             |
+| `<leader>ac` | 与 Avante 对话     | `n`  | Chat with Avante       |
+| `<leader>ae` | 编辑 Avante       | `n`  | Edit Avante            |
+| `<leader>af` | 聚焦 Avante       | `n`  | Focus Avante           |
+| `<leader>ah` | Avante 历史       | `n`  | Avante History         |
+| `<leader>am` | 选择 Avante 模型    | `n`  | Select Avante Model    |
+| `<leader>an` | 新建 Avante 对话    | `n`  | New Avante Chat        |
+| `<leader>ap` | 切换 Avante 提供商   | `n`  | Switch Avante Provider |
+| `<leader>ar` | 刷新 Avante       | `n`  | Refresh Avante         |
+| `<leader>as` | 停止 Avante       | `n`  | Stop Avante            |
+| `<leader>at` | 切换 Avante       | `n`  | Toggle Avante          |
 
 ### 4.15 claudecode.nvim
 
