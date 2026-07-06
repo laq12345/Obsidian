@@ -103,24 +103,24 @@ watchexec **自动读取 .gitignore**，不会因为 `node_modules/`、`_freeze/
 
 ## 常用选项速查
 
-| 选项 | 含义 | 例子 |
-|------|------|------|
-| `-e, --exts` | 只监控特定扩展名 | `-e py,R` |
-| `-w, --watch` | 指定监控路径 | `-w src/ -w data/` |
-| `-c, --clear` | 跑命令前清屏 | `-c` |
-| `-r, --restart` | 进程还在跑就先停后启 | `-r` |
-| `-p, --postpone` | 启动时不跑，等第一次文件变化 | `-p` |
-| `-d, --debounce` | 防抖时间 | `-d 100ms` |
-| `-i, --ignore` | 忽略匹配的文件 | `-i "*.log"` |
-| `-f, --filter` | 只匹配特定文件 | `-f "*.csv"` |
-| `-n` | 不用 shell（直接 exec） | `-n` |
-| `--no-vcs-ignore` | 不忽略 .gitignore 里的文件 | `--no-vcs-ignore` |
-| `--exit-on-error` | 命令失败时退出 watchexec | `--exit-on-error` |
-| `--shell` | 指定 shell | `--shell=bash` |
-| `--stop-timeout` | 重启时等旧进程退出多久 | `--stop-timeout 5s` |
-| `--notify` | 跑完发桌面通知 | `-N` |
-| `--timings` | 打印命令耗时 | `--timings` |
-| `--bell` | 跑完响铃 | `--bell` |
+| 选项                | 含义                  | 例子                  |
+| ----------------- | ------------------- | ------------------- |
+| `-e, --exts`      | 只监控特定扩展名            | `-e py,R`           |
+| `-w, --watch`     | 指定监控路径              | `-w src/ -w data/`  |
+| `-c, --clear`     | 跑命令前清屏              | `-c`                |
+| `-r, --restart`   | 进程还在跑就先停后启          | `-r`                |
+| `-p, --postpone`  | 启动时不跑，等第一次文件变化      | `-p`                |
+| `-d, --debounce`  | 防抖时间                | `-d 100ms`          |
+| `-i, --ignore`    | 忽略匹配的文件             | `-i "*.log"`        |
+| `-f, --filter`    | 只匹配特定文件             | `-f "*.csv"`        |
+| `-n`              | 不用 shell（直接 exec）   | `-n`                |
+| `--no-vcs-ignore` | 不忽略 .gitignore 里的文件 | `--no-vcs-ignore`   |
+| `--exit-on-error` | 命令失败时退出 watchexec   | `--exit-on-error`   |
+| `--shell`         | 指定 shell            | `--shell=bash`      |
+| `--stop-timeout`  | 重启时等旧进程退出多久         | `--stop-timeout 5s` |
+| `--notify`        | 跑完发桌面通知             | `-N`                |
+| `--timings`       | 打印命令耗时              | `--timings`         |
+| `--bell`          | 跑完响铃                | `--bell`            |
 
 ---
 
