@@ -1,3 +1,8 @@
+---
+created: 2026-06-03
+tags:
+  - linux
+---
 # Helix 编辑器教程笔记
 
 > Helix 是一个后现代模态文本编辑器（A post-modern modal text editor），受 Vim/Kakoune 启发。

@@ -1,3 +1,9 @@
+---
+created: 2026-04-27
+tags:
+  - pandas
+lang: Python
+---
 # Pixi 的 Linux 安装
 
 ## 一、Linux 安装 Pixi（推荐）

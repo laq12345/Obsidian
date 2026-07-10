@@ -1,3 +1,8 @@
+---
+created: 2026-04-27
+tags:
+  - linux
+---
 sudo docker pull image拉取镜像
 sudo docker rmi image 删除镜像
 sudo docker run image创建并运行容器

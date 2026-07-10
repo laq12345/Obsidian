@@ -1,3 +1,8 @@
+---
+created: 2026-07-03
+tags:
+  - linux
+---
 # watchexec 实用教程
 
 ## 安装

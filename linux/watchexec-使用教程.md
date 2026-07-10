@@ -1,3 +1,8 @@
+---
+created: 2026-07-03
+tags:
+  - linux
+---
 # watchexec 使用教程
 
 ## 这是什么？
