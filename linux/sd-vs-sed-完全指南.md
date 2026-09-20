@@ -14,6 +14,9 @@ tags:
 > **sd**（Rust 写，现代） vs **sed**（GNU，经典标准）
 > 两者都是流式文本编辑器，但设计哲学截然不同。
 
+> [!warning] 2026-09-20 用本机 **sd v1.0.0** 核对后修正
+> 修正了三处：① 安装段误写“sd 系统已预装”（Fedora **不预装** sd）；② 把不存在的 `-A` 选项改为正确的 `-f m`（两处）；③ 性能、内存数字换为本机实测（原文的 11.93× 无来源，且 sd 的内存开销比 sed 大很多）。
+
 ---
 
 ## 1. 一句话区别
@@ -28,11 +31,13 @@ tags:
 ## 2. 安装
 
 ```bash
-# sd — 系统已预装（Fedora 默认）
+# sd —— 需要自行安装（本机是 cargo 装在 ~/.cargo/bin/sd；
+# 查证：rpm -qf $(command -v sd) → “不属于任何软件包”，即 Fedora 并未预装）
 cargo install sd
+# 其他包管理器：https://repology.org/project/sd-find-replace/versions
 
-# sed — 系统已预装（GNU sed 4.9）
-# Fedora 默认已带，无需额外安装
+# sed —— 系统预装（GNU sed 4.9）
+# 查证：rpm -qf $(command -v sed) → sed-4.9-7.fc44.x86_64
 ```
 
 ---
@@ -90,7 +95,7 @@ echo "hello world" | sed 's/hello/hi/'   # 也一样
 | 正则方言 | JavaScript/Python 风格（Rust regex crate） | 基本 BRE（默认）/ ERE（`-r` 或 `-E`） |
 | 捕获组 | `$1`, `$2`, `$name` | `\1`, `\2` |
 | 命名捕获组 | `(?P<name>...)` + `$name` | ❌ 不支持 |
-| 跨行匹配 | `-A` 选项 | 需要 `N`/`P` 等命令组合 |
+| 跨行匹配 | `-f m` 选项 | 需要 `N`/`P` 等命令组合 |
 | 非贪婪匹配 | 默认就是非贪婪 | 需要 `[^...]*` 手动模拟 |
 | `.` 匹配换行 | `-f s` | ❌ 不支持 |
 | 全文匹配 | `-f m` | `:a;N;$!ba;...` | 
@@ -148,7 +153,7 @@ sed -f script.sed file.txt                # 从脚本文件读取
 | 打印第5-10行 | ❌ | `sed -n '5,10p' file` |
 | 提取 IP | ❌ | `sed -n 's/.*addr:\([0-9.]*\).*/\1/p'` |
 | 替换路径中的斜杠 | `sd '/usr' '/opt'`（无歧义） | `sed 's#/usr#/opt#g'`（需换分隔符） |
-| 跨行替换 `\r\n` → `\n` | `sd -A '\r\n' '\n' file` | `sed -i 's/\r$//' file` |
+| 跨行替换 `\r\n` → `\n` | `sd -f m '\r\n' '\n' file` | `sed -i 's/\r$//' file` |
 | 批量替换（配合 fd） | `fd -e py -x sd old new` | `fd -e py -x sed -i 's/old/new/g'` |
 | 修改前备份 | ❌ | `sed -i.bak 's/old/new/g' file` |
 | 在文件头尾加内容 | ❌ | `sed -i '1i\HEADER' ; ' $a\FOOTER' file` |
@@ -157,14 +162,29 @@ sed -f script.sed file.txt                # 从脚本文件读取
 
 ## 6. 性能对比
 
-```
-sd v1.0.0 vs GNU sed 4.9
+> [!warning] 原文件里那组“1.5GB 快 2.35×、55MB 快 11.93×”**没有注明来源**，基本是 sd 上游 README 的数字，不要当本机结论引用。
 
-1.5GB JSON 简单替换:  sd 快约 2.35 倍
-55MB  JSON 正则替换:   sd 快约 11.93 倍
+**本机实测**（86 MB / 150 万行文本，tmpfs；结果用 `cmp` 验证过两者输出完全一致）：
+
+```text
+sd v1.0.0 vs GNU sed 4.9 （86 MB 纯文本）
+
+字面量替换   sd -F 'needle' 'NEEDLE' f   → 0.196 s
+             sed -i 's/needle/NEEDLE/g'  → 0.470 s      sd 快 2.4×
+
+正则替换     sd 'n(e{2})dle' 'X${1}X' f → 0.338 s
+             sed -i -E 's/n(e{2})dle/X\1X/g' → 0.566 s   sd 快 1.7×
 ```
 
-sd 用 Rust 实现，内存安全、多线程感知。sed 是 C 写的单线程流处理。
+**内存（同一份 86 MB 文件，峰值 RSS）：**
+
+| 命令 | 峰值内存 |
+|------|---------|
+| `sd 'a' 'b' file.txt` | **261 MB**（约文件的 3 倍） |
+| `sd 'a' 'b' < file.txt` | 175 MB |
+| `sed -i 's/a/b/g' file.txt` | **3 MB** |
+
+所以两者的定位是：**sd 快一点但要吃内存，sed 慢一点但是真流式**。改几 GB 的大文件时优选 `sed -i`（sd 可能被 OOM 杀掉）。
 
 但在日常小文件上两者差异可忽略，选顺手而非选快的。
 
@@ -274,7 +294,7 @@ sed [选项] '命令' [文件...]
 | `&`（原样） | 无需转义 | `\&` |
 | `/` | 无需转义 | 可选其他分隔符（如 `#`） |
 | 换行符 | `\n` | `\n`（某些版本） |
-| 捕获组引用 | `$1`, `$name` | `\1`, `\&` |
+| 捕获组引用 | `$1`, `$name`（`$1X` 要写成 `${1}X`） | `\1`…`\9`；`&` = 整个匹配，要字面 `&` 写 `\&` |
 
 ---
 

@@ -12,6 +12,11 @@ tags:
 
 > ripgrep 是一个面向行的搜索工具，递归搜索目录，默认遵守 `.gitignore`，速度极快。
 
+> [!warning] 2026-09-20 核对补充（本机 rg **15.2.0**）
+> 1. **本机这版 rg 没有编译 PCRE2**（`rg --version` 显示 `features:-pcre2`），所以 **`-P`、`\K`、环视 `(?=)`/`(?<=)` 全部用不了**，会报 `PCRE2 is not available in this build of ripgrep`。要 PCRE2 得用官方二进制或 `cargo install ripgrep --features pcre2`。需要环视时本机可用 `grep -P`（GNU grep 带 PCRE2）。
+> 2. **搜 PDF/Office/归档/数据库请直接用 `rga`**（ripgrep-all），不用自己写第八节那种 `--pre` 脚本——两者原理相同，但 rga 已经内置了几十种格式的适配器和缓存。见 [[rg-rga-sd-现代检索三件套]]。
+> 3. **`-z`（`--search-zip`）不支持 zip 容器**：只解压 gz/bz2/xz/zst/lz4/brotli 这类单流格式；对 `tar.gz` 是“把 tar 当文本扫”的假阳性，对 `zip` 只会报 `binary file matches`。要搜归档用 `rga`。
+
 ## 一、基本搜索
 
 ```bash
@@ -178,6 +183,13 @@ rg '\w(?-u:\w)\w'   # Unicode\w + ASCII\w + Unicode\w
 
 ## 八、预处理器 (`--pre`)
 
+> [!tip] 先用现成的：`rga`
+> 下面这种“自己写脚本 + `--pre`”的玩法，在 **`rga`**（ripgrep-all）里已经内置了：PDF、docx/odt/epub、zip/tar/gz、sqlite、音视频元数据都能直接搜，还带结果缓存。
+> ```bash
+> rga '关键词' ~/Documents          # 等价于下面整套脚本，且支持更多格式
+> ```
+> 完整说明见 [[rg-rga-sd-现代检索三件套]]。本节保留是因为**自己写 `--pre` 依然适用于 rga 没覆盖的格式**（比如你自定义的二进制格式）。
+
 用外部命令预处理文件后再搜索：
 
 ```bash
@@ -199,6 +211,16 @@ rg --pre ./preprocess '关键词' *.pdf
 ```bash
 rg --pre ./preprocess --pre-glob '*.pdf' '关键词'
 ```
+
+> [!warning] `--pre` 的代价（本机实测，5000 个文件 / 59 MB）
+> | 命令 | 耗时 |
+> |------|------|
+> | `rg -l falcon .` | 0.012 s |
+> | `rg --pre /tmp/catpre -l falcon .` | **0.929 s**（慢 **77 倍**） |
+> | `rg --pre /tmp/catpre --pre-glob '*.nomatch' -l falcon .` | 0.015 s |
+>
+> 原因正如官方文档所述：`--pre` 会**为每一个被搜索的文件无条件 spawn 一个子进程**，5000 个文件就是 5000 次 `fork/exec`——和 [[文本处理三剑客]] 第九节里 `find -exec` 慢 800 倍是同一个道理。
+> 所以：**务必配 `--pre-glob`** 把预处理器限制在真正需要的文件上（上表第三行就是加了 glob 后的开销）；不加 glob 等于对每个文本文件都跑一遍外部命令。
 
 ## 九、常用选项速查
 

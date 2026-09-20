@@ -14,6 +14,9 @@ tags:
 > GitHub: https://github.com/chmln/sd  
 > License: MIT | Stars: 7.1k+
 
+> [!warning] 2026-09-20 用本机 **sd v1.0.0** 逐条核对后修正
+> 修正了三个错误：① `-A` / `--across`、`-i` / `--ignore-case` **这两个选项在 sd 里并不存在**（正确的是 `-f m` / `-f i`）；② 性能基准数字来源不明，已换成本机实测；③ 内存开销的结论是反的（sd 比 sed 费内存得多）。
+
 ---
 
 ## 1. 为什么选择 sd？
@@ -32,7 +35,7 @@ tags:
 | 场景 | sd | sed |
 |------|----|-----|
 | 替换所有匹配 | `sd before after` | `sed 's/before/after/g'` |
-| 换行 → 逗号 | `sd -A '\n' ','` | `sed ':a;N;$!ba;s/\n/,/g'` |
+| 换行 → 逗号 | `sd -f m '\n' ','` | `sed ':a;N;$!ba;s/\n/,/g'` |
 | 提取含斜杠的内容 | `echo "..." \| sd '.*(/.*/)' '$1'` | `echo "..." \| sed -E 's/.*(\\/.*\\/)/\1/g'` |
 | 原地修改文件 | `sd before after file.txt` | `sed -i -e 's/before/after/g' file.txt` |
 
@@ -40,8 +43,32 @@ tags:
 
 ## 3. 性能基准
 
-在 **1.5GB JSON 文件**上做简单替换，sd 比 sed 快约 **2.35 倍**。  
-在 **55MB JSON 文件**上做正则替换，sd 比 sed 快约 **11.93 倍**。
+> [!warning] 原本写的“1.5GB 快 2.35 倍 / 55MB 快 11.93 倍”来自 sd 上游 README 的基准（不同硬件、不同文件），并非本机实测。
+
+**本机实测**（86 MB / 150 万行文本，tmpfs，`time` 计时，结果用 `cmp` 验证过与 sed 一致）：
+
+| 任务 | sd | sed | 倍数 |
+|------|-----|-----|------|
+| 字面量替换（`-F`） | 0.196 s | 0.470 s | sd **快 2.4×** |
+| 正则 + 捕获组替换 | 0.338 s | 0.566 s | sd **快 1.7×** |
+
+结论：**sd 确实快，但在本机这个规模上是 1.7–2.4 倍，不是十几倍。** 十几倍那种数字通常来自特定的硬件与文件特征，别当普适结论引用。
+
+### 3.1 内存：sd 是输的一方
+
+同一份 86 MB 文件，用 `/usr/bin/time -v` 看峰值 RSS：
+
+| 命令 | 峰值内存 |
+|------|---------|
+| `sd 'a' 'b' file` | **261 MB**（约文件的 3 倍） |
+| `sd -f m 'a' 'b' file` | **261 MB**（与是否跨行无关） |
+| `sd 'a' 'b' < file`（走管道） | 175 MB |
+| `sed -i 's/a/b/g' file` | **3 MB**（真流式） |
+
+**sd 会把整个文件读进内存，sed 是真的流式处理。** 所以：
+
+- 改几个 GB 的大文件（日志、导出的 CSV）时，`sed -i` 更安全；
+- `sd` 在内存受限的机器上可能直接被 OOM 杀掉。
 
 ---
 
@@ -117,6 +144,18 @@ echo '123.45' | sd '(?P<dollars>\d+)\.(?P<cents>\d+)' '${dollars}_dollars and ${
 # 输出: 123_dollars and 45_cents
 ```
 
+> [!danger] 索引捕获组也一样会歧义，而且名字字符集比你想的宽
+> `$1X` 不会被理解为“第 1 组 + X”，而是“名为 `1X` 的组”，直接**报错退出**：
+> ```bash
+> $ echo 'needle' | sd 'n(e{2})dle' 'X$1X'
+> error: The numbered capture group `$1` in the replacement text is ambiguous.
+> hint: Use curly braces to disambiguate it `${1}X`.
+>
+> $ echo 'needle' | sd 'n(e{2})dle' 'X${1}X'
+> XeeX          # 正确
+> ```
+> `sed` 的 `\1X` 没有这个问题（它能认出组号到 `1` 就结束）。
+
 ---
 
 ### 5.5 文件内替换
@@ -145,22 +184,37 @@ fd --type file --exec cp {} {}.bk \; --exec sd 'from "react"' 'from "preact"'
 
 ---
 
-### 5.7 跨行模式 (`-A` / `--across`)
+### 5.7 跨行模式（`-f m`）
 
-默认情况下 sd 是**逐行处理**的（`^` / `$` 匹配行首行尾）。
+> [!danger] 这里原本写的是 `-A` / `--across`——**sd 1.0.0 没有这个选项**
+> ```bash
+> $ printf 'a\nb\n' | sd -A 'a\nb' 'AB'
+> error: unexpected argument '-A' found
+>
+> $ printf 'a\nb\n' | sd --across 'a\nb' 'AB'
+> error: unexpected argument '--across' found
+> ```
+> 正确写法是 **`-f m`（`--flags m`，即 regex 的多行标志 m）**。
 
-加上 `-A` 后，模式可以跨越换行边界：
+默认情况下 sd 是**逐行处理**的（`^` / `$` 匹配行首行尾）。加上 `-f m` 后，`^`/`$` 按整个输入算，模式就能跨越换行边界：
 
 ```bash
 # 将换行替换为逗号
-echo -e "hello\nworld" | sd -A '\n' ','
-# 输出: hello,world
+$ printf 'hello\nworld\n' | sd -f m '\n' ','
+hello,world,
+
+# 或者让 . 也匹配换行（-f s）：
+$ printf 'a\nb\n' | sd -f s 'a.b' 'AB'
+AB
 ```
 
-| 模式 | 说明 | 峰值内存 |
-|------|------|----------|
-| 默认（逐行） | 低内存，流式输出，`^` / `$` 匹配每行边界 | ~3 MB |
-| `-A`（跨行） | 多行匹配，如替换 `\n`、多行模式 | ~74 MB |
+| 模式 | 说明 | 本机实测峰值内存（86 MB 文件） |
+|------|------|-------------------------------|
+| 默认 | 逐行匹配，`^` / `$` 匹配每行边界 | **261 MB** |
+| `-f m` | 多行匹配，`^`/`$` 作用于整个输入 | **261 MB**（与默认基本相同） |
+
+> [!note] 内存数字纠正
+> 本文原写“默认 ~3 MB / 跨行 ~74 MB”，**两个数字都不对**。实测 sd 无论加不加 `-f m` 都要 ~261 MB；真正流式的是 `sed`（3 MB）。详见 § 3.1。
 
 ---
 
@@ -205,9 +259,14 @@ sd -p 'old' 'new' file.txt
 |------|------|------|
 | `-F` | `--fixed-strings` | 字面量模式，禁用正则 |
 | `-p` | `--preview` | 预览模式，显示变化但不修改文件 |
-| `-A` | `--across` | 跨行模式，模式可跨换行匹配 |
-| `-i` | `--ignore-case` | 忽略大小写（推测） |
+| `-n` | `--max-replacements N` | 限制每文件替换次数（`0` = 不限制） |
+| `-f` | `--flags <FLAGS>` | 正则标志，可组合（`c` `e` `i` `m` `s` `w`） |
 | `--` | — | 终止标志解析，后续参数视为普通字符串 |
+
+> [!danger] 常见的三个错记
+> - `-i` 想当作“忽略大小写”：**sd 没有 `-i`**，正确是 `-f i`（实测 `sd -i` → `error: unexpected argument '-i' found`）。
+> - `-A` / `--across` 想当作跨行：**不存在**，正确是 `-f m`。
+> - `-f` 后面可组合多个标志，如 `-f mc`（多行 + 区分大小写）。
 
 ---
 
@@ -217,8 +276,8 @@ sd -p 'old' 'new' file.txt
 # 去除所有行尾空白
 sd '\s+$' '' file.txt
 
-# 统一换行符为 Unix 风格（需跨行模式）
-sd -A '\r\n' '\n' file.txt
+# 统一换行符为 Unix 风格（需多行模式）
+sd -f m '\r\n' '\n' file.txt
 
 # 删除所有空行
 sd '^\s*\n' '' file.txt
