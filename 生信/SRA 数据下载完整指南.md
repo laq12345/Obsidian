@@ -207,14 +207,14 @@ aria2c -x 16 -s 16 -k 4M -c "$(srapath SRR11955372)"
 
 ### 3.1 为什么这条路更优
 
-| 维度 | prefetch 路线 | ENA + aria2c |
-| --- | --- | --- |
-| 下载内容 | `.sra`（50.55 GiB） | **`fastq.gz`（64.96 GiB）** |
-| 下载连接数 | 单连接 | **16+ 连接聚合** |
-| 转换步骤 | 需要 `fasterq-dump` | **不需要** |
-| 峰值磁盘 | **≈ 17 × `.sra`** | 只有最终 fastq |
-| 完整性校验 | `vdb-validate` | ENA 提供 `md5` |
-| 拿来即可用 | 否 | **是**（直接喂 cellranger / salmon） |
+| 维度    | prefetch 路线       | ENA + aria2c                   |
+| ----- | ----------------- | ------------------------------ |
+| 下载内容  | `.sra`（50.55 GiB） | **`fastq.gz`（64.96 GiB）**      |
+| 下载连接数 | 单连接               | **16+ 连接聚合**                   |
+| 转换步骤  | 需要 `fasterq-dump` | **不需要**                        |
+| 峰值磁盘  | **≈ 17 × `.sra`** | 只有最终 fastq                     |
+| 完整性校验 | `vdb-validate`    | ENA 提供 `md5`                   |
+| 拿来即可用 | 否                 | **是**（直接喂 cellranger / salmon） |
 
 省下的流量只有约 20%（`.sra` 比 `fastq.gz` 小），但**省掉的转换时间和峰值磁盘是数量级的**（见 §6）。
 
@@ -268,15 +268,47 @@ md5sum -c md5.txt      # md5.txt 由 API 的 fastq_md5 生成
 
 `-x 16 -k 1M` 是 aria2 的上限组合（`-x` 范围 1–16，`-k` 范围 1M–1G），详见 [[aria2c使用教程]]。
 
+> [!warning] 尺寸正确 ≠ 内容正确（实测踩过的坑，本节最该记住的一条）
+> ENA 存储后端在高并发 Range 请求下会**提前掉断连接**，并返回一段 XML 错误文档：
+> ```
+> <Error><Code>ConnectionClosedException</Code>
+> <Message>Premature end of Content-Length delimited message body
+> (expected: 307,203,595; received: 11,283,147)</Message></Error>
+> ```
+> **aria2c 会把这段错误文档当成数据写进输出文件**，然后用重试补齐剩余区间。结果是：
+>
+> - 文件**字节数完全正确** —— 所以单看大小查不出任何问题
+> - 中间一小块是错误文本（实测某文件 703 MB 里只有 **199 字节**不同，集中在同一位置）
+> - aria2c 报 `OK`、**退出码 0**
+> - 但 md5 不匹配，且 `gzip -t` **失败** → 文件真的不可用
+>
+> 实测一次 **7 个文件（约一半）** 因此损坏，触发条件就是 `-x16 -s16` 高并发。
+>
+> **两个对策（缺一不可）**
+>
+> 1. **把 ENA 的 md5 交给 aria2c** —— 输入文件里 URI 后缩进一行 `checksum`：
+>    ```
+>    https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR119/076/SRR11955376/SRR11955376_2.fastq.gz
+>      checksum=md5=dd89619362200f331a5c5a10f990aaca
+>    ```
+>    配 `--check-integrity=true`。实测：预置一个尺寸正确的损坏文件，aria2 **能检出并自动重下** —— 这是唯一能自动修好坏文件的机制。
+> 2. **并发降到 `-x4 -s4`**，降低 ENA 掉连接的概率（用速度换完整性）。
+>
+> [!caution] 只靠「重跑」是修不好的
+> 损坏文件字节数正好等于期望值，且 aria2 成功完成后会删掉 `.aria2` 控制文件。
+> 于是重跑时 aria2 判定"已完成" → **直接跳过**。实测：4 秒、0 B/s、文件**一个字节没变**，md5 依旧失败。
+> 结果就是「跳过 → md5 失败 → 再跳过」的死循环。**必须删掉坏文件**（或用上面的 checksum 自修复）才能真重下。
+
 ### 3.5 现成脚本 `fetch_sra.sh`
 
-位置：`bioinfo/learn/20CellRanger/fetch_sra.sh`
+位置：`~/.local/bin/fetch_sra.sh`（已在 PATH 上，直接敲 `fetch_sra.sh` 即可）
 
 ```bash
-./fetch_sra.sh -i SRR_Acc_List.txt -o fastq/    # 批量（走 ENA API）
-./fetch_sra.sh SRR11955372 SRR11955373          # 单个 / 多个
-./fetch_sra.sh -i SRR_Acc_List.txt -n           # dry-run，只列会下什么、共多少 GiB
-./fetch_sra.sh -i list.txt -j 2 -x 16           # 调并发
+fetch_sra.sh -i SRR_Acc_List.txt -o fastq/    # 批量（走 ENA API）
+fetch_sra.sh SRR11955372 SRR11955373          # 单个 / 多个
+fetch_sra.sh -i SRR_Acc_List.txt -n           # dry-run，只列会下什么、共多少 GiB
+fetch_sra.sh -i list.txt -j 2 -x 4            # 调并发
+fetch_sra.sh -i list.txt --keep-corrupt       # md5 失败时保留坏文件（默认删除）
 ```
 
 **退出码约定**（便于放进流水线）：
@@ -292,9 +324,13 @@ md5sum -c md5.txt      # md5.txt 由 API 的 fastq_md5 生成
 - 支持位置参数与选项混排（`fetch_sra.sh SRR123 -o out/` 也正确）
 - ENA 里没有的 run 会明确告警并提示改用 `prefetch`，不静默跳过
 - 可重复执行；每个文件独立核对存在性与非空
+- **把 ENA 的 md5 传给 aria2c 做自校验自修复**（`--check-integrity` + 输入文件里的 `checksum=md5=`）
+- **md5 失败时自动删除坏文件**（默认行为，`--keep-corrupt` 可关）—— 不删的话重跑会永远跳过它
 
 > [!note] 实测验证
-> 用 mock ENA 服务注入 6 种响应形态 + 3 种下载故障，共 11 个场景，全部通过（期望退出码 vs 实际退出码一致）。真实 ENA 连跑 12 次无误判。
+> - mock ENA 服务注入 6 种 API 响应形态 + 2 种下载/损坏故障，共 8 个场景全部通过
+> - 真实 ENA 连跑 12 次无误判；真实小文件下载 + md5 通过
+> - **真实修复路径**：用真实内容把 `ConnectionClosedException` 错误体注入一个已下好的文件（保持长度不变，md5 变为 `4bf9f2db…`），重跑后 aria2 检出并自动重下，md5 恢复为正确的 `7eb8bca2…`，exit 0
 
 ---
 
@@ -427,6 +463,8 @@ kingfisher get -r ERR1739691 -m aws-http -f fasta --download-threads 8
 | 12 | **把 ENA API 降级当成"没有数据"** | **静默丢样本且报成功** | 见 §3.3，重试 + 非 0 退出 |
 | 13 | 只信下载器退出码 | 文件缺失/为空却报成功 | 独立核对每个文件存在且非空 |
 | 14 | `set -e` + 命令替换 | `x=$(f); case $? in` 里的判定全是死代码 | 用 `if x=$(f); then ... else rc=$?; fi` |
+| 15 | **ENA 提前掉连接，aria2 把错误文档写进文件** | **字节数正确但内容损坏，aria2 还报 OK** | 见 §3.4：传 md5 给 aria2 + 降到 `-x4` |
+| 16 | 以为重跑能修好坏文件 | 4 秒 0 B/s 直接跳过，md5 依旧失败 | 删掉坏文件，或让 aria2 凭 checksum 自修复 |
 
 ---
 
@@ -499,8 +537,8 @@ ln -s ~/.local/share/sratoolkit.3.4.1-ubuntu64/bin/* ~/.local/bin/
 | 暴露命令 | 11 个：`prefetch`、`fasterq-dump`、`fastq-dump`、`vdb-validate`、`vdb-dump`、`vdb-config`、`srapath`、`sam-dump`、`sra-stat`、`sratools`、`kingfisher` |
 | 入口 | `~/.pixi/bin/<命令>` → `~/.pixi/envs/sra/bin/<命令>` |
 | 清单 | `~/.pixi/manifests/pixi-global.toml` |
-| 下载脚本 | `bioinfo/learn/20CellRanger/fetch_sra.sh` |
-| 备份 | `~/.pixi/manifests/pixi-global.toml.bak-before-bioconda`（改通道前留的，确认无误后可删） |
+| 下载脚本 | `~/.local/bin/fetch_sra.sh`（已在 PATH） |
+| 备份 | （无）改通道前留的 `pixi-global.toml.bak-before-bioconda` 已确认无用并删除 |
 
 > 安装过程中踩的坑：一开始按"并进现有 `tool` 环境"的思路走，先撞上 `-c` 被忽略的 bug，
 > 手动加通道后仍失败（`INSTALL_RC=1`），且 `sra-tools` 会把 90 个二进制塞进 PATH —— 于是改为专用环境 + `--expose`。
