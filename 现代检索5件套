@@ -1,0 +1,345 @@
+---
+time: 2026-10-04T00:45:00
+lang: Linux
+tags:
+  - linux
+  - 工具
+  - shell
+  - 编程
+  - fd
+  - fzf
+---
+
+# rg / rga / sd / fd / fzf：现代检索工具箱
+
+> **rg** 搜内容，**rga** 搜二进制格式里的内容，**sd** 做替换，**fd** 按文件名找，**fzf** 交互式筛选任意列表。
+> 五个都是 Rust 系工具，共享一套默认哲学：递归、跳过 `.gitignore` 和隐藏文件、并行、智能大小写。
+> 本机版本：rg 15.2.0（**无 PCRE2**）、rga 0.10.10、sd 1.0.0、fd 10.4.2、fzf（均 mise/cargo/pixi 安装）。
+
+> [!info] 深入用法见 [[ripgrep使用指南]]、[[sd笔记]]、[[sd-vs-sed-完全指南]]、[[fd使用指南]]、[[fzf-fzf.fish快捷键及用法]]、[[文本处理三剑客]]、[[xargs-tutorial]]
+
+---
+
+## 〇、什么时候用谁
+
+| 任务 | 用什么 | 一句话理由 |
+|------|--------|-----------|
+| 在代码/文本文件里搜内容 | **rg** | 递归、并行、自动跳过垃圾目录 |
+| 在 PDF/Office/zip/数据库/媒体里搜内容 | **rga** | 只有它能穿透二进制格式 |
+| 批量替换文本 | **sd** | 参数直觉、默认全局、原地改文件 |
+| 按文件名/大小/时间找文件 | **fd** | find 的现代替代，语法不用查 |
+| 从一堆结果里交互式挑一个 | **fzf** | 模糊匹配 + 预览，配任何管道 |
+| 写给别人跑的脚本 | grep / find / sed | POSIX 保证存在，rg/fd 不一定装了 |
+
+---
+
+## 一、rg：搜内容
+
+### 1.1 默认行为（先记住这四条）
+
+1. **递归**搜索当前目录，无需 `-r`
+2. **跳过**隐藏文件和 `.gitignore`/`.ignore` 里的东西
+3. 输出**按文件分组**、自带**行号**、彩色
+4. **智能大小写**：模式全小写→不区分大小写；含大写→区分大小写
+
+### 1.2 匹配控制
+
+| 选项                 | 作用                                                     |
+| ------------------ | ------------------------------------------------------ |
+| `-i` / `-s` / `-S` | 忽略 / 区分 / 智能大小写（`-S` 是默认）                              |
+| `-w` / `-x`        | 整词匹配 / 整行匹配                                            |
+| `-F`               | 模式当字面量，不解释正则                                           |
+| `-e PAT`           | 指定模式，可写多个（模式以 `-` 开头时必须用）                              |
+| `-U`               | 多行匹配，模式里可用 `\n`                                        |
+| `-z`               | 搜压缩文件——**只支持单流格式**（gz/bz2/xz/zst），zip/tar 不行，那是 rga 的活 |
+| `-v`               | 反选，输出**不含**匹配的行                                        |
+| `-P`               | PCRE2 正则（环视/反向引用）——**本机不可用**，见 1.5                     |
+
+### 1.3 输出控制
+
+| 选项 | 作用 |
+|------|------|
+| `-l` | 只列出含匹配的文件名 |
+| `-c` | 每文件的匹配**行数**（数出现次数用 `--count-matches` 或 `-o \| wc -l`） |
+| `-o` | 只输出匹配片段本身（配 `wc -l` 数真实次数） |
+| `-A n` / `-B n` / `-C n` | 显示匹配后/前/前后的 n 行 |
+| `-r REPL` | **预览**替换效果，不写文件 |
+| `-m N` | 每文件最多 N 个匹配 |
+| `-q` | 静默，命中即退出——脚本判断用：`rg -q pat && echo yes` |
+| `--stats` | 搜索统计（文件数、字节数） |
+| `--json` | 机器可读输出 |
+| `--sort path` | 按路径排序（默认并行执行，输出顺序不保证） |
+| `-n` / `-N` | 显示 / 隐藏行号 |
+
+### 1.4 文件过滤
+
+| 选项 | 作用 |
+|------|------|
+| `-t TYPE` / `-T TYPE` | 只搜 / 排除某类型（`rg --type-list` 查全部，如 `py`、`md`、`js`） |
+| `-g GLOB` | 按 glob 包含，`!` 前缀排除：`-g '*.md' -g '!docs/**'` |
+| `--iglob` | 大小写不敏感的 glob |
+| `--hidden` | 含隐藏文件 |
+| `--no-ignore` | 不理会 `.gitignore`/`.ignore` |
+| `-u` / `-uu` / `-uuu` | 层层放开：搜被忽略的 → 再搜隐藏文件 → 再把二进制当文本搜 |
+| `--files` | 只列出会搜哪些文件，不做内容搜索（找文件本身时用） |
+
+### 1.5 本机注意：无 PCRE2
+
+本机 rg 是 cargo 编译的，`features:-pcre2`，所以 **`-P`、环视 `(?=)`、`\K`、反向引用 `\1` 全部不可用**（报 `PCRE2 is not available in this build`）。需要时：`cargo install ripgrep --features pcre2 --force`，或改用 `grep -P`（本机可用）。
+
+### 1.6 例子
+
+```bash
+rg 'def main' -t py                # Python 文件里找函数定义
+rg -l 'TODO' -g '*.rs'             # 圈出所有含 TODO 的 rust 文件
+rg -o '\b\d{4}-\d{2}-\d{2}\b' | wc -l   # 数日期出现次数
+rg -C 2 'error' app.log            # 带前后 2 行上下文
+rg -r 'newName' 'oldName' f.rs     # 预览替换，不动文件
+rg --files -g '*.md'               # 列出所有 md 文件（不走内容搜索）
+```
+
+---
+
+## 二、rga：搜二进制格式里的内容
+
+### 2.1 它是什么
+
+rga **不是新的搜索引擎，是 rg 的前端**：遍历文件时按扩展名挑适配器，把 PDF/docx/zip 等先用外部工具抽成纯文本，再喂给真正的 rg——**所以 rg 的所有选项在 rga 里全部可用**，原样透传。抽取结果会缓存（sqlite + zstd），第二次搜同一个文件快一个量级。
+
+### 2.2 适配器
+
+| 适配器 | 处理格式 | 依赖的外部工具 |
+|--------|---------|---------------|
+| `poppler` | PDF（行前带 `Page N:` 前缀） | `pdftotext` |
+| `pandoc` | docx / odt / epub / fb2 / ipynb / html | `pandoc` |
+| `zip` / `tar` / `decompress` | zip/jar/tar 及 gz/bz2/xz/zst，**递归进嵌套归档** | 内建 |
+| `sqlite` | db / sqlite，表导成 `表名: 列=值` 文本 | 内建 |
+| `ffmpeg` | 音视频元数据、字幕、歌词 | `ffmpeg` |
+| `mail` | mbox / eml | **默认禁用**，要 `--rga-adapters=+mail` |
+
+> [!warning] 适配器靠外部工具干活。缺 `pdftotext` 就搜不了 PDF、缺 `pandoc` 就搜不了 docx，而且 rga **不报错，只是安静地跳过**。排查第一步：`rga --rga-list-adapters`。
+
+### 2.3 rga 专属选项（rg 的选项照常透传）
+
+| 选项 | 作用 |
+|------|------|
+| `--rga-list-adapters` | 列出适配器和外部依赖 |
+| `--rga-adapters=LIST` | 挑适配器：`poppler,zip` 只用这些；`-pandoc` 排除；`+mail` 启用默认禁用的 |
+| `--rga-accurate` | 按文件头 magic bytes 判断类型，而不是信扩展名（文件被改名/没扩展名时用，更慢） |
+| `--rga-cache-path=DIR` | 指定缓存目录（**必须带 `=`**）。指向空目录 = 强制重新抽取 |
+| `--rga-no-cache` | 禁用缓存——**本机 0.10.10 上是坏的**（所有要适配器的文件都解析失败，exit 2），用上一条代替 |
+| `--rga-no-prefix-filenames` | 不在输出里显示归档内部的路径前缀 |
+| `--rga-max-archive-recursion N` | 嵌套归档的递归深度（默认 5 层） |
+| `--rg-help` / `--rg-version` | 看内嵌 rg 的完整帮助 / 版本 |
+| `rga-preproc FILE`（独立命令） | 只做"抽成纯文本"这一步，输出到 stdout，方便接管道 |
+
+### 2.4 必须知道的坑
+
+1. **慢一个量级**：每个二进制文件都要起外部进程抽文本。纯文本目录直接用 rg。
+2. **静默失败**：不支持的格式（**xlsx** 就没有适配器）、缺失依赖，都返回空且不报错。
+3. **`-c` 数的是行数不是次数**：PDF 抽出来行很碎，同一篇文档 PDF/DOCX 的 `-c` 结果差很远；比数量一律 `-o | wc -l`。
+4. **不能读管道**：`cat f.pdf | rga pat` 无输出，搜索对象必须落盘成文件。
+5. **扫描版 PDF 搜不到**：没有 OCR，无文本层就没辙。
+6. **归档内部路径会进搜索范围和输出**（如搜 `inner` 会命中 `bundle.zip:pkg/inner.md:` 这行）。
+
+### 2.5 例子
+
+```bash
+rga -l 'PEEP|ARDS' ~/Documents          # 全库找出提到关键词的 PDF/docx/zip
+rga -o 'ARDS' paper.pdf | wc -l         # 真实出现次数（别用 -c）
+rga --rga-cache-path=/tmp/fc 'VILI' paper.pdf   # 干净重跑（绕开坏掉的 --rga-no-cache）
+rga-preproc paper.pdf > paper.txt       # 抽成纯文本，之后 grep/awk/sd 随便用
+```
+
+> [!tip] 搜 xlsx：rga 不支持，但 xlsx 本质是 zip + XML，可以解包后直接 rg 字符串：`unzip -p 表.xlsx 'xl/worksheets/*.xml' | rg -o '关键词' | wc -l`。要按行列结构分析就先转 CSV（python + openpyxl）。
+
+---
+
+## 三、sd：替换
+
+### 3.1 语法与默认行为
+
+```bash
+sd [FLAG] FROM TO [FILE...]     # 不写文件 = stdin→stdout；写文件 = 原地修改
+```
+
+和 sed 的三条根本区别：
+
+1. **默认全局替换**，不需要 `g` 标志
+2. **给文件就是原地修改，且不备份**（改前先 `git commit` 或 `sd -p` 预览）
+3. FROM 和 TO 是两个位置参数，没有 `s/…/…/` 定界符那套
+
+### 3.2 选项
+
+| 选项 | 作用 |
+|------|------|
+| `-p` | 预览：打印替换结果到屏幕，**不写文件** |
+| `-F` | FROM 当字面量（不加时 `.` 等都是正则元字符） |
+| `-n N` | 每文件最多替换 N 次（`-n 0` = 不限） |
+| `-f FLAGS` | 正则标志，可组合（如 `-f iw`）：`i` 忽略大小写、`c` 区分、`w` 整词、`m` `^$` 按行（默认开）、`s` `.` 匹配换行、`e` 关闭多行 |
+
+**替换串里的捕获组**：`$1`…`$9`、命名组 `(?P<name>…)` 用 `${name}`；要输出字面 `$` 写 `$$`。
+
+### 3.3 能力边界
+
+| 特性 | sd | 出路 |
+|------|:--:|------|
+| 命名捕获组 / 惰性量词 / `\p{Han}` | ✅ | — |
+| 环视 `(?=)` `(?<=)` | ❌ | `perl -pe` 或 `grep -oP` |
+| 反向引用 `\1` | ❌ | `sed -E` 或 `perl -pe` |
+| 删行 / 插行 / 行级操作 | ❌ | sed / awk |
+| 用退出码判断"替换过没有" | ❌（没匹配也返回 0） | 先 `rg -q` 探测 |
+
+### 3.4 例子
+
+```bash
+echo '2026-09-20' | sd '(\d+)-(\d+)-(\d+)' '$3/$2/$1'    # 20/09/2026
+echo 'a.b.c'      | sd -F '.' '_'                        # 字面量替换
+sd -p 'falcon' 'atlas' p.txt    # 先预览，确认了再去掉 -p 真改
+rg -l 'oldAPI' -t py | xargs sd 'oldAPI' 'newAPI'        # 批量重构
+```
+
+---
+
+## 四、fd：按文件名找
+
+### 4.1 默认行为
+
+```bash
+fd [模式] [起点目录]
+```
+
+1. 不给模式 = 列出所有文件和目录（类 `ls -R`）
+2. 模式默认是**正则**、智能大小写、只匹配**文件名**（不含路径）
+3. 跳过隐藏文件和 `.gitignore`（和 rg 一套哲学）
+4. 文件和目录都返回，用 `-t` 区分
+
+### 4.2 选项
+
+| 选项 | 作用 |
+|------|------|
+| `-H` / `-I` | 含隐藏文件 / 不理会 ignore 规则（`-u` 等于两个一起） |
+| `-t f` / `d` / `l` / `e` / `x` | 只返回 文件 / 目录 / 符号链接 / 空文件(目录) / 可执行文件 |
+| `-e EXT` | 按扩展名，可重复：`-e jpg -e png` |
+| `-S SIZE` | 按大小：`+100m`、`-50k` |
+| `--changed-within 1d` / `--changed-before 1d` | 按修改时间筛（最近一天内 / 之外） |
+| `-d N` / `--min-depth N` | 限制 / 起始深度 |
+| `-p` | 匹配**完整路径**而不是仅文件名 |
+| `-g GLOB` | 改用 glob 匹配（默认正则）；`-G` 大小写不敏感 |
+| `-F` | 模式当字面量 |
+| `-E GLOB` | 排除：`-E '*.tmp' -E node_modules` |
+| `-a` | 输出绝对路径 |
+| `-l` | 详细列表（权限、大小、时间，类 `ls -l`） |
+| `-x CMD` | 对**每个**结果执行 CMD，`{}` 是结果占位符、`{.}` 是去扩展名版本 |
+| `-X CMD` | 把**所有**结果一次性作为参数传给 CMD（等价 xargs，快） |
+| `-0` | 用 NUL 分隔输出（配 `xargs -0`） |
+| `-o user` | 按属主筛 |
+
+### 4.3 例子
+
+```bash
+fd wechat ~/.config          # 名字含 wechat 的文件/目录
+fd -e pdf -t f ~/Documents   # 只要文件、只要 pdf
+fd -S +100m -t f -X du -h | sort -rh | head    # 找出最大的文件
+fd --changed-within 24h -t f  # 最近 24 小时改过的文件
+fd -e jpg -x convert {} {.}.png    # 每个结果执行命令
+fd -e md | fzf               # 接 fzf 交互式挑（见下一节）
+```
+
+---
+
+## 五、fzf：交互式筛选
+
+### 5.1 它是什么
+
+fzf 自己**不搜文件系统**，它是一个通用模糊筛选器：从 **stdin** 读一堆行，你边打字它边模糊匹配，把**选中的行输出到 stdout**。列表从哪来随你——fd、rg、命令历史、git log 都行。它是这五个工具里唯一的交互式工具，也是把它们串起来的黏合剂。
+
+### 5.2 选项
+
+| 选项 | 作用 |
+|------|------|
+| `-m` | 多选，Tab 勾选 |
+| `--height 40%` | 只占终端下方 40%（默认全屏接管） |
+| `--layout=reverse` | 列表在上、输入行在下 |
+| `--query STR` | 带初始关键词启动 |
+| `--preview 'CMD {}'` | 右侧预览窗格，`{}` 为当前选中行 |
+| `--ansi` | 解析输入里的 ANSI 颜色码 |
+| `-0` / `--print0` | 读入 / 输出用 NUL 分隔（处理带空格文件名） |
+| `--sync` | 等 stdin 读完后才开始交互（两级筛选串联时用） |
+| `--tiebreak length` | 调整候选排序策略 |
+
+交互中：`Enter` 确认、`Tab` 多选勾选、`Ctrl-J/K` 或方向键移动、`Esc` 取消。
+Shell 集成（fish 下由 fzf.fish 提供）：`Ctrl-R` 搜历史命令、`Ctrl-Alt-F` 搜文件、`Ctrl-Alt-L` 搜 git log——详见 [[fzf-fzf.fish快捷键及用法]]。默认参数可写进 `FZF_DEFAULT_OPTS`，默认的列表来源命令是 `FZF_DEFAULT_COMMAND`。
+
+### 5.3 例子
+
+```bash
+fd -t f | fzf                          # 模糊挑文件，回车输出路径
+vim "$(fd -e py | fzf)"                # 挑完直接打开
+fd -e md | fzf --preview 'cat {}'      # 带预览窗格
+rg -l 'main' | fzf                     # 先 rg 圈范围，再人工挑
+ps aux | fzf                           # 任何列表都能筛
+```
+
+---
+
+## 六、组合流水线
+
+```bash
+# 重构：圈定 → 预览 → 替换
+rg -l 'oldName' -t py                  # 先看影响面
+rg -l 'oldName' -t py | xargs sd 'oldName' 'newName'
+
+# 清理：找大文件 → 排序 → 确认删除
+fd -S +500m -t f -a -X du -h | sort -rh | head
+
+# 资料：跨格式找，再抽成文本细读
+rga -l 'BC-9931' ~/Documents
+rga-preproc 合同.pdf | rg -n '违约|终止'
+
+# 日常：模糊挑文件打开
+vim "$(fd -e md -t f | fzf --preview 'cat {}')"
+```
+
+---
+
+## 七、速查表
+
+| 我要…… | 命令 |
+|--------|------|
+| 在项目里搜代码 | `rg 'pattern'` |
+| 只搜某类文件 / 排除某目录 | `rg -t py pat` / `rg -g '!dist/**' pat` |
+| 数某词真实出现次数 | `rg -o pat \| wc -l` |
+| 圈出含关键词的文件 | `rg -l pat` |
+| 带上下文看 | `rg -C 3 pat` |
+| 预览替换 / 真替换 | `rg -r NEW pat`（只预览）/ `sd`（真改文件） |
+| 连隐藏、忽略文件一起搜 | `rg -uuu pat` |
+| 按名字找文件 | `fd name [目录]` |
+| 按扩展名 / 大小 / 时间找 | `fd -e pdf` / `-S +100m` / `--changed-within 1d` |
+| 找到后批量执行 | `fd -e log -x gzip {}` 或 `-X CMD`（一次性） |
+| 在 PDF/docx/zip/db 里搜 | `rga pat 目录` |
+| 拿真实出现次数（rga） | `rga -o pat f.pdf \| wc -l`（别用 `-c`） |
+| 抽 PDF/docx 成纯文本 | `rga-preproc f.pdf > f.txt` |
+| 干净重跑 rga（缓存失效） | `rga --rga-cache-path=/tmp/fc pat …` |
+| 交互式从列表里挑 | `… \| fzf`，多选加 `-m`，预览加 `--preview 'cat {}'` |
+| 搜历史命令 / 文件 / git log | fish 下 fzf.fish 的快捷键（见相关笔记） |
+| 别人机器 / 通用脚本 | `grep -rn` / `find . -name` / `sed -i` |
+
+| 各工具最痛的一个坑 | |
+|------|------|
+| rg | 本机无 PCRE2，`-P`/环视/`\1` 不可用 |
+| rga | `-c` 数行不数次；xlsx 不支持且**静默返回空** |
+| sd | 默认原地改文件**且不备份**，先 `-p` 预览 |
+| fd | 默认跳过隐藏和 `.gitignore`，找不见时先想到 `-uu` |
+| fzf | 结果直接回车才输出；多选记得 `-m` + `Tab` |
+
+---
+
+## 相关笔记
+
+- [[ripgrep使用指南]] —— rg 完整用法（类型过滤、`.ignore`、配置文件）
+- [[sd笔记]] / [[sd-vs-sed-完全指南]] —— sd 完整用法及与 sed 逐项对照
+- [[fd使用指南]] / [[eza常见用法]] —— fd 与 eza
+- [[fzf-fzf.fish快捷键及用法]] —— fish 下的 fzf 快捷键
+- [[文本处理三剑客]] —— grep/sed/awk 经典三件，含 column 对齐
+- [[xargs-tutorial]] —— `| xargs` 这条流水线的另一半
