@@ -373,6 +373,8 @@ After=network-online.target
 
 ## 8) 日志系统 journald 深入
 
+> 本节从 systemd 全局视角讲日志。`journalctl` 选项全表、字段分类、`journald.conf` 容量/限流配置、容器与离线分析见专篇：[[journalctl与journald详解]]。
+
 ### 8.1 为什么 journald 好用
 
 - 按 unit、boot、优先级、时间过滤
