@@ -172,31 +172,31 @@ numbat -i script.nbt                    # 跑完脚本后进入 REPL（保留状
 
 ### 特殊命令（仅交互模式）
 
-| 命令 | 作用 |
-|---|---|
-| `help` / `?` | 基本介绍 |
-| `help commands` | 所有命令的简述 |
-| `info <标识符>` | 查看函数 / 变量 / 单位 / 量纲的信息（**注意：`info` 是命令，不是函数**，`numbat -e 'info x'` 会报 unknown identifier） |
-| `list` | 列出当前所有已定义项 |
-| `list functions`/`dimensions`/`variables`/`units` | 分类列出 |
-| `save` / `save <path>` | 把本次会话历史存成 `.nbt`（默认 `history.nbt`） |
-| `clear` | 清屏（Web 版另有 `reset`，重置解释器状态并清空 URL） |
-| `quit` / `exit` | 退出 |
+| 命令                                                | 作用                                                                                        |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `help` / `?`                                      | 基本介绍                                                                                      |
+| `help commands`                                   | 所有命令的简述                                                                                   |
+| `info <标识符>`                                      | 查看函数 / 变量 / 单位 / 量纲的信息（**注意：`info` 是命令，不是函数**，`numbat -e 'info x'` 会报 unknown identifier） |
+| `list`                                            | 列出当前所有已定义项                                                                                |
+| `list functions`/`dimensions`/`variables`/`units` | 分类列出                                                                                      |
+| `save` / `save <path>`                            | 把本次会话历史存成 `.nbt`（默认 `history.nbt`）                                                        |
+| `clear`                                           | 清屏（Web 版另有 `reset`，重置解释器状态并清空 URL）                                                        |
+| `quit` / `exit`                                   | 退出                                                                                        |
 
 ### 快捷键
 
-| 按键 | 作用 |
-|---|---|
-| `Tab` / `Ctrl-I` | 自动补全 + Unicode 输入（关键！） |
-| `Ctrl-D` | 退出 |
-| `Ctrl-L` | 清屏 |
-| `↑` / `↓` | 历史命令 |
-| `Ctrl-R` | 搜索历史 |
-| `Ctrl-C` | 清空当前行 |
-| `Alt-Enter` | 插入换行（`Shift-Enter` 在 Web 版） |
-| `Home` / `Ctrl-A` | 行首；`End` / `Ctrl-E` 行尾 |
-| `Ctrl-W` | 删除光标前一个词 |
-| Web 版另有 | `Ctrl-←/→` 按词移动、`Ctrl-K` 删右侧、`Ctrl-U` 删左侧 |
+| 按键                | 作用                                        |
+| ----------------- | ----------------------------------------- |
+| `Tab` / `Ctrl-I`  | 自动补全 + Unicode 输入（关键！）                    |
+| `Ctrl-D`          | 退出                                        |
+| `Ctrl-L`          | 清屏                                        |
+| `↑` / `↓`         | 历史命令                                      |
+| `Ctrl-R`          | 搜索历史                                      |
+| `Ctrl-C`          | 清空当前行                                     |
+| `Alt-Enter`       | 插入换行（`Shift-Enter` 在 Web 版）               |
+| `Home` / `Ctrl-A` | 行首；`End` / `Ctrl-E` 行尾                    |
+| `Ctrl-W`          | 删除光标前一个词                                  |
+| Web 版另有           | `Ctrl-←/→` 按词移动、`Ctrl-K` 删右侧、`Ctrl-U` 删左侧 |
 
 ### 补全与 Unicode
 
