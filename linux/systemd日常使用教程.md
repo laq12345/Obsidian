@@ -468,12 +468,12 @@ ExecStart={ path=/usr/bin/bash ; argv[]=/usr/bin/bash -c while true; do echo "$(
 
 ### 5.4 什么时候要 daemon-reload
 
-| 改了什么 | 需要 `daemon-reload` |
-| --- | --- |
-| 新建、删除、修改 `.service` / `.timer` 文件 | 需要 |
-| 新建或修改 `.d/override.conf` | 需要 |
-| 用 `systemctl edit` 修改 | 不需要（它会自动 reload） |
-| 只改 unit 引用的外部脚本内容 | 不需要，但要 `restart` 那个服务 |
+| 改了什么                              | 需要 `daemon-reload`    |
+| --------------------------------- | --------------------- |
+| 新建、删除、修改 `.service` / `.timer` 文件 | 需要                    |
+| 新建或修改 `.d/override.conf`          | 需要                    |
+| 用 `systemctl edit` 修改             | 不需要（它会自动 reload）      |
+| 只改 unit 引用的外部脚本内容                 | 不需要，但要 `restart` 那个服务 |
 
 标准流程：
 
@@ -506,31 +506,31 @@ systemctl revert --runtime NAME.service
 
 ### 6.2 `[Unit]`：描述类指令
 
-| 指令 | 作用 |
-| --- | --- |
-| `Description=` | 一句话说明，显示在 `status` 和日志里 |
-| `Documentation=` | 文档链接，`man:xxx(5)` 或 `https://...`，可多行 |
-| `After=` / `Before=` | 仅定义**启动顺序**，不定义依赖 |
-| `Requires=` / `Wants=` | 定义依赖，见 6.3 |
-| `Conflicts=` | 互斥，见 6.3 |
-| `OnFailure=` | 本单元进入 failed 时激活的单元（可用来发通知） |
-| `StartLimitIntervalSec=` / `StartLimitBurst=` | 启动频率限制，见 6.7 |
-| `Condition...` / `Assert...` | 条件判断，见 6.4 |
+| 指令                                            | 作用                                    |
+| --------------------------------------------- | ------------------------------------- |
+| `Description=`                                | 一句话说明，显示在 `status` 和日志里               |
+| `Documentation=`                              | 文档链接，`man:xxx(5)` 或 `https://...`，可多行 |
+| `After=` / `Before=`                          | 仅定义**启动顺序**，不定义依赖                     |
+| `Requires=` / `Wants=`                        | 定义依赖，见 6.3                            |
+| `Conflicts=`                                  | 互斥，见 6.3                              |
+| `OnFailure=`                                  | 本单元进入 failed 时激活的单元（可用来发通知）           |
+| `StartLimitIntervalSec=` / `StartLimitBurst=` | 启动频率限制，见 6.7                          |
+| `Condition...` / `Assert...`                  | 条件判断，见 6.4                            |
 
 ### 6.3 `[Unit]`：依赖关系
 
 systemd 把"要不要对方在"和"谁先谁后"分成两类指令，**必须分开写**。
 
-| 指令 | 类型 | 含义（man 原文要点） |
-| --- | --- | --- |
-| `Wants=` | 弱依赖 | 希望对方也启动，对方起不来不影响本单元 |
-| `Requires=` | 强依赖 | 对方起不来则本单元失败；对方被停止时本单元也停止 |
-| `Requisite=` | 强依赖 | 对方**必须已经在运行**，否则立即失败；不隐含顺序 |
-| `BindsTo=` | 最强依赖 | 同 `Requires=`，且对方意外消失（不只是被停止）时本单元也停止 |
-| `PartOf=` | 单向传播 | 对方被停止/重启时本单元跟着停/重启；反向不传播 |
-| `Conflicts=` | 互斥 | 启动本单元会停掉对方，反之亦然 |
-| `After=` | 顺序 | 本单元在对方**之后**启动 |
-| `Before=` | 顺序 | 本单元在对方**之前**启动 |
+| 指令           | 类型   | 含义（man 原文要点）                         |
+| ------------ | ---- | ------------------------------------ |
+| `Wants=`     | 弱依赖  | 希望对方也启动，对方起不来不影响本单元                  |
+| `Requires=`  | 强依赖  | 对方起不来则本单元失败；对方被停止时本单元也停止             |
+| `Requisite=` | 强依赖  | 对方**必须已经在运行**，否则立即失败；不隐含顺序           |
+| `BindsTo=`   | 最强依赖 | 同 `Requires=`，且对方意外消失（不只是被停止）时本单元也停止 |
+| `PartOf=`    | 单向传播 | 对方被停止/重启时本单元跟着停/重启；反向不传播             |
+| `Conflicts=` | 互斥   | 启动本单元会停掉对方，反之亦然                      |
+| `After=`     | 顺序   | 本单元在对方**之后**启动                       |
+| `Before=`    | 顺序   | 本单元在对方**之前**启动                       |
 
 常见错误：只写 `After=` 不写 `Wants=`。`After=network-online.target` 只表示"如果它也在启动队列里，我排在它后面"；如果它根本不在队列里，这个顺序约束不产生任何效果。需要网络就两者都写：
 
@@ -548,14 +548,14 @@ Wants=network-online.target
 
 `Condition...=` 不满足时跳过本单元（视为成功），`Assert...=` 不满足时直接失败。
 
-| 指令 | 判断什么 |
-| --- | --- |
-| `ConditionPathExists=` / `ConditionPathIsDirectory=` | 路径是否存在 |
-| `ConditionFileNotEmpty=` | 文件非空 |
-| `ConditionUser=` | 运行者是否为指定用户 |
-| `ConditionHost=` / `ConditionArchitecture=` | 主机名 / 架构 |
-| `ConditionACPower=` | 是否接电源（笔记本电池策略） |
-| `ConditionCapability=` | 是否具备某 capability |
+| 指令                                                   | 判断什么             |
+| ---------------------------------------------------- | ---------------- |
+| `ConditionPathExists=` / `ConditionPathIsDirectory=` | 路径是否存在           |
+| `ConditionFileNotEmpty=`                             | 文件非空             |
+| `ConditionUser=`                                     | 运行者是否为指定用户       |
+| `ConditionHost=` / `ConditionArchitecture=`          | 主机名 / 架构         |
+| `ConditionACPower=`                                  | 是否接电源（笔记本电池策略）   |
+| `ConditionCapability=`                               | 是否具备某 capability |
 
 取反在值前加 `!`。多个 `Condition=` 之间是逻辑与。
 
@@ -591,14 +591,14 @@ RemainAfterExit=yes
 
 ### 6.6 `[Service]`：Exec 家族
 
-| 指令 | 执行时机 |
-| --- | --- |
-| `ExecStartPre=` | 启动前，可多个 |
-| `ExecStart=` | 主命令 |
-| `ExecStartPost=` | 启动成功后 |
-| `ExecReload=` | 收到 `systemctl reload` 时 |
-| `ExecStop=` | 收到 `systemctl stop` 时 |
-| `ExecStopPost=` | 停止后，无论成功失败 |
+| 指令               | 执行时机                    |
+| ---------------- | ----------------------- |
+| `ExecStartPre=`  | 启动前，可多个                 |
+| `ExecStart=`     | 主命令                     |
+| `ExecStartPost=` | 启动成功后                   |
+| `ExecReload=`    | 收到 `systemctl reload` 时 |
+| `ExecStop=`      | 收到 `systemctl stop` 时   |
+| `ExecStopPost=`  | 停止后，无论成功失败              |
 
 `ExecStart=` 的规则（`man systemd.service` 原文）：
 
@@ -628,14 +628,14 @@ ExecStart=/usr/local/bin/new-command --flag
 
 `Restart=` 的取值：
 
-| 取值 | 重启条件 |
-| --- | --- |
-| `no`（默认） | 不重启 |
-| `on-success` | 仅干净退出（exit 0、SIGHUP/SIGINT/SIGTERM/SIGPIPE、`SuccessExitStatus=` 列出的） |
-| `on-failure` | 非零退出、被信号杀死、超时、看门狗超时 |
-| `on-abnormal` | 仅信号、超时、看门狗；非零退出**不算** |
-| `on-watchdog` / `on-abort` | 仅看门狗超时 / 仅未捕获信号 |
-| `always` | 除 `systemctl stop` 之外全部 |
+| 取值                         | 重启条件                                                                 |
+| -------------------------- | -------------------------------------------------------------------- |
+| `no`（默认）                   | 不重启                                                                  |
+| `on-success`               | 仅干净退出（exit 0、SIGHUP/SIGINT/SIGTERM/SIGPIPE、`SuccessExitStatus=` 列出的） |
+| `on-failure`               | 非零退出、被信号杀死、超时、看门狗超时                                                  |
+| `on-abnormal`              | 仅信号、超时、看门狗；非零退出**不算**                                                |
+| `on-watchdog` / `on-abort` | 仅看门狗超时 / 仅未捕获信号                                                      |
+| `always`                   | 除 `systemctl stop` 之外全部                                              |
 
 `man systemd.service` 原文：
 
@@ -679,12 +679,12 @@ PATH=/var/home/smile/.pixi/bin:/var/home/smile/.local/share/mise/...:/usr/bin:..
 
 四种设置方式：
 
-| 方式 | 写法 | 适用范围 |
-| --- | --- | --- |
-| `Environment=` | `Environment="PATH=/a:/usr/bin:/bin"` | 单个单元 |
-| `EnvironmentFile=` | `EnvironmentFile=%h/.config/foo.env`（文件内 `KEY=VALUE` 每行一条） | 单个单元，可放权限 600 的密钥文件 |
-| `PassEnvironment=` | `PassEnvironment=PATH LANG` | 从 user manager 环境透传指定变量 |
-| `environment.d` | `~/.config/environment.d/*.conf` | 所有用户单元（系统级单元读不到） |
+| 方式                 | 写法                                                         | 适用范围                    |
+| ------------------ | ---------------------------------------------------------- | ----------------------- |
+| `Environment=`     | `Environment="PATH=/a:/usr/bin:/bin"`                      | 单个单元                    |
+| `EnvironmentFile=` | `EnvironmentFile=%h/.config/foo.env`（文件内 `KEY=VALUE` 每行一条） | 单个单元，可放权限 600 的密钥文件     |
+| `PassEnvironment=` | `PassEnvironment=PATH LANG`                                | 从 user manager 环境透传指定变量 |
+| `environment.d`    | `~/.config/environment.d/*.conf`                           | 所有用户单元（系统级单元读不到）        |
 
 Arch Wiki 的说明：
 
@@ -705,15 +705,15 @@ systemctl --user show-environment            # 查看
 
 常用项（详见 `man systemd.resource-control`）：
 
-| 指令 | 作用 |
-| --- | --- |
-| `MemoryMax=` | 内存上限，超出触发 OOM |
-| `MemoryHigh=` | 内存软上限，超出后限速回收 |
-| `CPUQuota=` | CPU 上限，如 `50%` 表示单核一半 |
-| `IOWeight=` | IO 相对权重（1–10000） |
-| `TasksMax=` | 进程数上限 |
-| `LimitNOFILE=` | 文件描述符上限 |
-| `Nice=` | 调度优先级（-20–19） |
+| 指令                | 作用                    |
+| ----------------- | --------------------- |
+| `MemoryMax=`      | 内存上限，超出触发 OOM         |
+| `MemoryHigh=`     | 内存软上限，超出后限速回收         |
+| `CPUQuota=`       | CPU 上限，如 `50%` 表示单核一半 |
+| `IOWeight=`       | IO 相对权重（1–10000）      |
+| `TasksMax=`       | 进程数上限                 |
+| `LimitNOFILE=`    | 文件描述符上限               |
+| `Nice=`           | 调度优先级（-20–19）         |
 | `OOMScoreAdjust=` | OOM 被杀优先级（-1000–1000） |
 
 示例：限制某个后台任务不超过 1G 内存、50% 单核：
@@ -728,20 +728,20 @@ CPUQuota=50%
 
 `%` 开头的字符串会在加载时被替换（`man systemd.unit` 的 SPECIFIERS 一节）。常用项：
 
-| 说明符 | 展开为 | 本机值 |
-| --- | --- | --- |
-| `%h` | 用户家目录 | `/var/home/smile` |
-| `%u` / `%U` | 用户名 / UID | `smile` / `1000` |
-| `%t` | 运行时目录 | `/run/user/1000` |
-| `%S` | 状态目录 | `~/.local/state` |
-| `%C` | 缓存目录 | `~/.cache` |
-| `%E` | 配置目录 | `~/.config` |
-| `%D` | 数据目录 | `~/.local/share` |
-| `%i` / `%I` | 模板单元实例名（原始 / 反转义） | 见 6.11 |
-| `%n` / `%N` | 完整单元名 / 不含后缀 | `foo.service` / `foo` |
-| `%p` | 前缀名（`@` 前） | `foo` |
-| `%f` | 反转义后的实例路径 | — |
-| `%%` | 一个字面 `%` | `%` |
+| 说明符         | 展开为               | 本机值                   |
+| ----------- | ----------------- | --------------------- |
+| `%h`        | 用户家目录             | `/var/home/smile`     |
+| `%u` / `%U` | 用户名 / UID         | `smile` / `1000`      |
+| `%t`        | 运行时目录             | `/run/user/1000`      |
+| `%S`        | 状态目录              | `~/.local/state`      |
+| `%C`        | 缓存目录              | `~/.cache`            |
+| `%E`        | 配置目录              | `~/.config`           |
+| `%D`        | 数据目录              | `~/.local/share`      |
+| `%i` / `%I` | 模板单元实例名（原始 / 反转义） | 见 6.11                |
+| `%n` / `%N` | 完整单元名 / 不含后缀      | `foo.service` / `foo` |
+| `%p`        | 前缀名（`@` 前）        | `foo`                 |
+| `%f`        | 反转义后的实例路径         | —                     |
+| `%%`        | 一个字面 `%`          | `%`                   |
 
 任何不需要被替换的 `%` 都必须写成 `%%`。写错时 `systemd-analyze verify` 会报错（本机真实报错）：
 
@@ -769,12 +769,12 @@ ExecStart=/usr/bin/bash -c 'while true; do echo "$(date)"; sleep 5; done'
 
 `WantedBy=` 决定 `enable` 时链接到哪个 target 的 `wants/` 目录：
 
-| 目标 | 含义 |
-| --- | --- |
+| 目标                  | 含义                      |
+| ------------------- | ----------------------- |
 | `multi-user.target` | 系统级服务，进入多用户模式时启动（无图形也起） |
-| `graphical.target` | 需要图形环境 |
-| `timers.target` | timer 的标准写法 |
-| `default.target` | 用户单元的标准写法，随用户实例启动 |
+| `graphical.target`  | 需要图形环境                  |
+| `timers.target`     | timer 的标准写法             |
+| `default.target`    | 用户单元的标准写法，随用户实例启动       |
 
 Arch Wiki 的 user 单元示例同样使用：
 
@@ -880,14 +880,14 @@ Environment="HERMES_HOME=/var/home/smile/.hermes"
 WantedBy=default.target
 ```
 
-| 行 | 作用 |
-| --- | --- |
-| `After=` + `Wants=` 成对 | 顺序 + 弱依赖，缺一不可（6.3） |
+| 行                         | 作用                   |
+| ------------------------- | -------------------- |
+| `After=` + `Wants=` 成对    | 顺序 + 弱依赖，缺一不可（6.3）   |
 | `StartLimitIntervalSec=0` | 关闭启动频率限制，允许无限重启（6.7） |
-| `Type=simple` | fork 出去即视为启动成功 |
-| `ExecStart=` 带引号 | 路径或参数含空格时需要；必须是绝对路径 |
-| `WorkingDirectory=` | 相对路径的基准，不写则是 `/` |
-| `Environment="PATH=..."` | 显式指定 PATH（6.8） |
+| `Type=simple`             | fork 出去即视为启动成功       |
+| `ExecStart=` 带引号          | 路径或参数含空格时需要；必须是绝对路径  |
+| `WorkingDirectory=`       | 相对路径的基准，不写则是 `/`     |
+| `Environment="PATH=..."`  | 显式指定 PATH（6.8）       |
 
 ### 6.15 可直接复制的模板
 
@@ -947,9 +947,9 @@ graph LR
 
 ### 7.2 两类计时
 
-| 类型 | 指令 | 起点 | 适用 |
-| --- | --- | --- | --- |
-| 墙钟（realtime） | `OnCalendar=` | 日历时间 | 每天 3 点、每周一 |
+| 类型            | 指令                                                                                          | 起点         | 适用                |
+| ------------- | ------------------------------------------------------------------------------------------- | ---------- | ----------------- |
+| 墙钟（realtime）  | `OnCalendar=`                                                                               | 日历时间       | 每天 3 点、每周一        |
 | 单调（monotonic） | `OnBootSec=` / `OnStartupSec=` / `OnUnitActiveSec=` / `OnUnitInactiveSec=` / `OnActiveSec=` | 开机、上次激活等事件 | 开机后 5 分钟、每隔 10 分钟 |
 
 单调计时器在休眠或重启后重置，因此不适合"每天固定时刻"的任务。
@@ -964,16 +964,16 @@ DayOfWeek Year-Month-Day Hour:Minute:Second
 
 `*` 任意值，`,` 列举，`..` 范围，`/` 步长。
 
-| 表达式 | 含义 |
-| --- | --- |
-| `daily` / `hourly` / `weekly` / `monthly` / `yearly` | 简写 |
-| `*-*-* 03:00:00` | 每天 03:00 |
-| `Mon..Fri 09:00` | 工作日 09:00 |
-| `*-*-* *:00/15:00` | 每 15 分钟 |
-| `*-*-01 00:00:00` | 每月 1 号零点 |
-| `Sat *-*-1..7 18:00:00` | 每月第一个周六 18:00 |
-| `*-*-* 02:00:00 Europe/Paris` | 指定时区 |
-| `2026-11-01 08:00` | 一次性绝对时间 |
+| 表达式                                                  | 含义            |
+| ---------------------------------------------------- | ------------- |
+| `daily` / `hourly` / `weekly` / `monthly` / `yearly` | 简写            |
+| `*-*-* 03:00:00`                                     | 每天 03:00      |
+| `Mon..Fri 09:00`                                     | 工作日 09:00     |
+| `*-*-* *:00/15:00`                                   | 每 15 分钟       |
+| `*-*-01 00:00:00`                                    | 每月 1 号零点      |
+| `Sat *-*-1..7 18:00:00`                              | 每月第一个周六 18:00 |
+| `*-*-* 02:00:00 Europe/Paris`                        | 指定时区          |
+| `2026-11-01 08:00`                                   | 一次性绝对时间       |
 
 写多行 `OnCalendar=` 取并集（例如每天 8 点和 20 点各一次）。
 
@@ -990,12 +990,12 @@ Normalized form: Mon..Fri *-*-* 09:00:00
 
 ### 7.4 修饰项
 
-| 指令 | 作用 | 注意 |
-| --- | --- | --- |
-| `Persistent=true` | 关机期间错过的任务，开机后补跑一次 | 只对 `OnCalendar=` 生效（man 原文：only has an effect on timers configured with `OnCalendar=`）。状态存于 `~/.local/share/systemd/timers/`（系统级 `/var/lib/systemd/timers/`）；清理用 `systemctl --user clean --what=state NAME.timer`，不要手动删文件 |
-| `AccuracySec=` | 允许的误差窗口 | **默认 `1min`**。Arch Wiki 建议写 `AccuracySec=1us`；日常用 `1s` 也可。不写的话 03:00:00 的任务可能 03:00:47 才跑 |
-| `RandomizedDelaySec=` | 在窗口内随机延迟 | 多机部署避免整点集中；单机可写 `5min` 求稳 |
-| `Unit=` | 显式指定被触发的服务 | 不写按同名匹配（`x.timer` → `x.service`）。改名后不加 `Unit=` 会得到 `Job failed` |
+| 指令                    | 作用                | 注意                                                                                                                                                                                                                        |
+| --------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Persistent=true`     | 关机期间错过的任务，开机后补跑一次 | 只对 `OnCalendar=` 生效（man 原文：only has an effect on timers configured with `OnCalendar=`）。状态存于 `~/.local/share/systemd/timers/`（系统级 `/var/lib/systemd/timers/`）；清理用 `systemctl --user clean --what=state NAME.timer`，不要手动删文件 |
+| `AccuracySec=`        | 允许的误差窗口           | **默认 `1min`**。Arch Wiki 建议写 `AccuracySec=1us`；日常用 `1s` 也可。不写的话 03:00:00 的任务可能 03:00:47 才跑                                                                                                                                 |
+| `RandomizedDelaySec=` | 在窗口内随机延迟          | 多机部署避免整点集中；单机可写 `5min` 求稳                                                                                                                                                                                                 |
+| `Unit=`               | 显式指定被触发的服务        | 不写按同名匹配（`x.timer` → `x.service`）。改名后不加 `Unit=` 会得到 `Job failed`                                                                                                                                                           |
 
 ### 7.5 示例：每天备份
 
@@ -1082,14 +1082,14 @@ timer 相对 cron 的差别：每个任务有独立 service，可单独启动调
 
 ### 8.1 系统级与用户级
 
-| | 系统级（默认） | 用户级（`--user`） |
-| --- | --- | --- |
-| 运行者 | root | 你自己 |
-| 配置路径 | `/etc/systemd/system/` | `~/.config/systemd/user/` |
-| 需要 sudo | 是 | 否 |
-| 环境变量 | 极简 | 继承用户会话（含 `DISPLAY`、`WAYLAND_DISPLAY`、`DBUS_SESSION_BUS_ADDRESS`） |
-| 访问图形界面 | 默认不能 | 能 |
-| 系统更新影响 | 可能被覆盖 | 不受影响 |
+|         | 系统级（默认）                | 用户级（`--user`）                                                    |
+| ------- | ---------------------- | ---------------------------------------------------------------- |
+| 运行者     | root                   | 你自己                                                              |
+| 配置路径    | `/etc/systemd/system/` | `~/.config/systemd/user/`                                        |
+| 需要 sudo | 是                      | 否                                                                |
+| 环境变量    | 极简                     | 继承用户会话（含 `DISPLAY`、`WAYLAND_DISPLAY`、`DBUS_SESSION_BUS_ADDRESS`） |
+| 访问图形界面  | 默认不能                   | 能                                                                |
+| 系统更新影响  | 可能被覆盖                  | 不受影响                                                             |
 
 判断：不需要 root 就用 `--user`。需要绑定 1024 以下端口、改防火墙、挂载文件系统时才写系统单元。
 
@@ -1158,14 +1158,14 @@ PartOf=graphical-session.target
 
 ## 9. 诊断工具
 
-| 命令 | 用途 |
-| --- | --- |
-| `systemd-analyze time` | 开机耗时分布。本机实测：7.950s firmware + 10.049s loader + 791ms kernel + 6.222s initrd + 8.215s userspace = 33.229s |
-| `systemd-analyze blame` | 各单元耗时排序。本机前几名都是 device（`sys-module-fuse.device` 8.597s），属于硬件等待，不是软件问题 |
-| `systemd-analyze critical-chain` | 关键路径，真正影响开机的串行链 |
-| `systemd-analyze verify FILE` | 单元语法、说明符、依赖检查 |
-| `systemd-analyze calendar "表达式"` | 计算下次触发时间 |
-| `systemd-analyze security UNIT` | 沙箱严格度评分 |
+| 命令                               | 用途                                                                                                       |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `systemd-analyze time`           | 开机耗时分布。本机实测：7.950s firmware + 10.049s loader + 791ms kernel + 6.222s initrd + 8.215s userspace = 33.229s |
+| `systemd-analyze blame`          | 各单元耗时排序。本机前几名都是 device（`sys-module-fuse.device` 8.597s），属于硬件等待，不是软件问题                                    |
+| `systemd-analyze critical-chain` | 关键路径，真正影响开机的串行链                                                                                          |
+| `systemd-analyze verify FILE`    | 单元语法、说明符、依赖检查                                                                                            |
+| `systemd-analyze calendar "表达式"` | 计算下次触发时间                                                                                                 |
+| `systemd-analyze security UNIT`  | 沙箱严格度评分                                                                                                  |
 
 其余：
 
